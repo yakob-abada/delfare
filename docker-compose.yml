@@ -1,0 +1,63 @@
+version: "3.8"
+services:
+  nats:
+    image: nats:2.10
+    container_name: nats-service
+    ports:
+      - "4222:4222"
+    #    command: --user "username" --pass "password"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "4222" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - delfare_default
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb-service
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=${DOCKER_INFLUXDB_INIT_MODE}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    networks:
+      - delfare_default
+  daemon:
+    build: ./deamon-service
+    container_name: deamon-service
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=${NATS_URL}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    depends_on:
+      - nats
+    networks:
+      - delfare_default
+
+  client:
+    build: ./client-service
+    container_name: client-service
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=${NATS_URL}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    depends_on:
+      - nats
+    networks:
+      - delfare_default
+networks:
+  delfare_default:
+    driver: bridge
+#    external: true
+    name: delfare_default

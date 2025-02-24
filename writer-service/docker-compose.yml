@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  writer:
+    build: .
+    container_name: writer-service
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=${NATS_URL}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+    networks:
+      - delfare_default
+
+networks:
+  delfare_default:
+    external: true

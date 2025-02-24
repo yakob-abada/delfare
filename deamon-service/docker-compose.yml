@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  nats:
+    image: nats:2.10
+    container_name: nats-service
+    env_file:
+      - .env
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    command: ["-js", "-m", "8222"]
+#    command: --user "username" --pass "password"
+    volumes:
+      - ./nats:/etc/nats/
+    networks:
+      - my_shared_network
+  app:
+    build: .
+    container_name: deamon-service
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=${NATS_URL}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    depends_on:
+      - nats
+    networks:
+      - my_shared_network
+networks:
+  my_shared_network:
+    external: true
