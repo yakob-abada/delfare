@@ -36,7 +36,7 @@ func (r *NATSEventRepository) GetLastCriticalEvents(
 
 		var event domain.Event
 		if err := json.Unmarshal(msg.Data, &event); err != nil {
-			fmt.Println("Error unmarshalling event:", err)
+			r.logger.Error(domain.LogContext{}, "Error unmarshalling event", "error", err)
 			return
 		}
 

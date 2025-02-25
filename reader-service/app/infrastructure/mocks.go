@@ -7,7 +7,7 @@ import (
 	"github.com/yakob-abada/delfare/reader-service/domain"
 )
 
-// MockEventRepository mocks the EventRepository interface
+// MockEventRepository mocks the Repository interface
 type MockEventRepository struct {
 	mock.Mock
 }
@@ -41,7 +41,7 @@ func (m *MockLogger) Fatal(ctx domain.LogContext, msg string, fields ...interfac
 	m.Called(ctx, msg, fields)
 }
 
-// MockEventPublisher mocks the EventPublisher interface
+// MockEventPublisher mocks the Publisher interface
 type MockEventPublisher struct {
 	mock.Mock
 }

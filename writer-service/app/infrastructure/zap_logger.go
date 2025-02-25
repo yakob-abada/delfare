@@ -71,12 +71,6 @@ func (z *ZapLogger) buildFields(ctx domain.LogContext, fields []interface{}) []z
 	if ctx.RequestID != "" {
 		zapFields = append(zapFields, zap.String("request_id", ctx.RequestID))
 	}
-	if ctx.CorrelationID != "" {
-		zapFields = append(zapFields, zap.String("correlation_id", ctx.CorrelationID))
-	}
-	if ctx.UserID != "" {
-		zapFields = append(zapFields, zap.String("user_id", ctx.UserID))
-	}
 
 	// Add additional fields
 	for i := 0; i < len(fields); i += 2 {

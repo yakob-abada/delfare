@@ -9,8 +9,8 @@ import (
 
 // EventService implements EventService
 type EventService struct {
-	repo             domain.EventRepository
-	publisher        domain.EventPublisher
+	repo             domain.Repository
+	publisher        domain.Publisher
 	logger           domain.Logger
 	eventWorkerCount int
 	mu               sync.RWMutex
@@ -18,7 +18,7 @@ type EventService struct {
 }
 
 func NewEventService(
-	repo domain.EventRepository, publisher domain.EventPublisher, logger domain.Logger, eventWorkerCount int,
+	repo domain.Repository, publisher domain.Publisher, logger domain.Logger, eventWorkerCount int,
 ) *EventService {
 	return &EventService{
 		repo:             repo,

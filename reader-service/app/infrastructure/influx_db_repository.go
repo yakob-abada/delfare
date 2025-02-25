@@ -17,7 +17,7 @@ type InfluxDBRepository struct {
 	logger domain.Logger
 }
 
-func NewInfluxDBRepository(cfg config.Config, logger domain.Logger) domain.EventRepository {
+func NewInfluxDBRepository(cfg config.Config, logger domain.Logger) domain.Repository {
 	client := influxdb2.NewClient(cfg.InfluxDBURL, cfg.InfluxDBToken)
 	return &InfluxDBRepository{client, cfg.InfluxDBOrg, cfg.InfluxDBBucket, logger}
 }

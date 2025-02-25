@@ -8,11 +8,11 @@ import (
 )
 
 type EventService struct {
-	repo   domain.EventRepository
+	repo   domain.Repository
 	logger domain.Logger
 }
 
-func NewEventService(repo domain.EventRepository, logger domain.Logger) *EventService {
+func NewEventService(repo domain.Repository, logger domain.Logger) *EventService {
 	return &EventService{repo: repo, logger: logger}
 }
 
