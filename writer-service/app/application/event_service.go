@@ -24,7 +24,7 @@ func NewEventService(subscriber domain.Subscriber, repository domain.Repository,
 func (s *EventService) HandleEvent(ctx context.Context) error {
 	processor := func(event domain.Event) error {
 		s.logger.Info(domain.LogContext{}, "Received message", "info", event)
-		return s.repository.Write(event)
+		return s.repository.Write(ctx, event)
 	}
 
 	err := s.subscriber.ProcessEvents(ctx, processor)

@@ -11,8 +11,8 @@ type MockEventRepository struct {
 	mock.Mock
 }
 
-func (m *MockEventRepository) Write(event domain.Event) error {
-	args := m.Called(event)
+func (m *MockEventRepository) Write(ctx context.Context, event domain.Event) error {
+	args := m.Called(ctx, event)
 	if args.Error(0) != nil {
 		return args.Error(0)
 	}

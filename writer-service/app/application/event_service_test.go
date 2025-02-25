@@ -17,7 +17,7 @@ func TestEventService_GetLastCriticalEvents(t *testing.T) {
 	ctx := context.TODO()
 	event := domain.Event{Criticality: 8, Timestamp: time.Now(), Message: "Mock Event 1"}
 	mockRepo := &infrastructure.MockEventRepository{}
-	mockRepo.On("Write", event).Return(nil, errors.New("something went wrong"))
+	mockRepo.On("Write", ctx, event).Return(nil, errors.New("something went wrong"))
 
 	mockLogger := &infrastructure.MockLogger{}
 	mockLogger.On("Info", domain.LogContext{}, "Received message", mock.Anything).Return()
@@ -42,7 +42,7 @@ func TestEventService_GetLastCriticalEvents_Error(t *testing.T) {
 	event := domain.Event{Criticality: 8, Timestamp: time.Now(), Message: "Mock Event 1"}
 	mockRepo := &infrastructure.MockEventRepository{}
 
-	mockRepo.On("Write", event).Return(nil, errors.New("something went wrong"))
+	mockRepo.On("Write", ctx, event).Return(nil, errors.New("something went wrong"))
 
 	mockLogger := &infrastructure.MockLogger{}
 	mockLogger.On("Info", domain.LogContext{}, "Received message", mock.Anything).Return()

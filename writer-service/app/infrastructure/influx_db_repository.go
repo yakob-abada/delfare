@@ -20,21 +20,8 @@ func NewInfluxDBRepository(cfg config.Config, logger domain.Logger) domain.Repos
 }
 
 // Write writes a security event to InfluxDB
-func (r *InfluxDBRepository) Write(event domain.Event) error {
+func (r *InfluxDBRepository) Write(ctx context.Context, event domain.Event) error {
 	writeAPI := r.client.WriteAPIBlocking(r.org, r.bucket)
-
-	//p := influxdb2.NewPoint(
-	//	"security_events",
-	//	map[string]string{
-	//		"event_type": "security",
-	//		"request_id": event.RequestID,
-	//	},
-	//	map[string]interface{}{
-	//		"criticality": event.Criticality,
-	//		"message":     event.Message,
-	//	},
-	//	event.Timestamp, // Timestamp
-	//)
 
 	p := influxdb2.NewPointWithMeasurement("security_events").
 		AddTag("request_id", event.RequestID).
@@ -42,7 +29,7 @@ func (r *InfluxDBRepository) Write(event domain.Event) error {
 		AddField("message", event.Message).
 		SetTime(event.Timestamp)
 
-	err := writeAPI.WritePoint(context.Background(), p)
+	err := writeAPI.WritePoint(ctx, p)
 	if err != nil {
 		r.logger.Error(domain.LogContext{}, "Error writing to InfluxDB", "error", err)
 		return err
