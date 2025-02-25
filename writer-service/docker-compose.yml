@@ -20,3 +20,4 @@ services:
 networks:
   delfare_default:
     external: true
+    name: delfare_default
