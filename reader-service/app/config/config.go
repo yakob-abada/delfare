@@ -17,13 +17,9 @@ type Config struct {
 	InfluxDBBucket       string
 	LogLevel             string
 	WorkerCount          int
-	TaskQueueCap         int // Buffered task queue
-	TaskQueueSize        int
 	MaxProcessedEvents   int
 	MinCriticalityEvents int
-	PrometheusPort       string
 	Env                  string
-	ServerAddress        string
 }
 
 // LoadConfig reads configuration from environment variables
@@ -38,13 +34,9 @@ func LoadConfig() *Config {
 		InfluxDBBucket:       getEnv("INFLUXDB_BUCKET", "event-bucket"),
 		LogLevel:             getEnv("LOG_LEVEL", "info"),
 		WorkerCount:          getEnvAsInt("WORKER_COUNT", 5),
-		TaskQueueCap:         getEnvAsInt("TASK_QUEUE_CAP", 100),
-		TaskQueueSize:        getEnvAsInt("TASK_QUEUE_SIZE", 100),
 		MaxProcessedEvents:   getEnvAsInt("MAX_PROCESSED_EVENTS", 100),
 		MinCriticalityEvents: getEnvAsInt("MIN_CRITICALITY_EVENTS", 5),
-		PrometheusPort:       getEnv("PROMETHEUS_PORT", ":9090"),
 		Env:                  getEnv("ENV", "dev"),
-		ServerAddress:        getEnv("SERVER_ADDRESS", "localhost:8080"),
 	}
 
 	log.Println("Config Loaded Successfully")
