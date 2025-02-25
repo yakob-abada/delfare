@@ -16,8 +16,9 @@ func NewEventService(repo domain.EventRepository, logger domain.Logger) *EventSe
 	return &EventService{repo: repo, logger: logger}
 }
 
-func (s *EventService) GetLastCriticalEvents(ctx context.Context, doneCh chan struct{}, threshold int, limit int) error {
+func (s *EventService) GetLastCriticalEvents(ctx context.Context, doneCh chan struct{}, eventCh chan domain.Event, threshold int, limit int) error {
 	getEvent := func(event domain.Event) {
+		eventCh <- event
 		s.logger.Info(domain.LogContext{}, "Received message", "info", event)
 		return
 	}

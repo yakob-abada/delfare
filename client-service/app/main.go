@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -32,13 +33,24 @@ func main() {
 	repo := infrastructure.NewNATSEventRepository(nc, logger)
 	eventService := application.NewEventService(repo, logger)
 	ctx, cancel := context.WithCancel(context.Background())
+	eventCh := make(chan domain.Event)
 	doneCh := make(chan struct{})
+	var events []domain.Event
 
-	// Fetch and display critical events
-	err = eventService.GetLastCriticalEvents(ctx, doneCh, cfg.CriticalityThreshold, 5)
+	// Goroutine to process events
+	go func() {
+		for event := range eventCh {
+			fmt.Println("Received event:", event)
+			events = append(events, event)
+		}
+	}()
+
+	err = eventService.GetLastCriticalEvents(ctx, doneCh, eventCh, cfg.CriticalityThreshold, cfg.EventProcessLimit)
 	if err != nil {
 		logger.Fatal(domain.LogContext{}, "Error fetching critical events", "error", err)
+		cancel()
 	}
+	defer close(eventCh) // Close eventCh once event fetching is done
 
 	// Handle graceful shutdown
 	go func() {
@@ -49,6 +61,8 @@ func main() {
 			fmt.Println("Received termination signal. Exiting...")
 			cancel()
 		case <-doneCh:
+			b, _ := json.Marshal(events)
+			fmt.Printf("events are %s", b)
 			fmt.Println("Processing complete. Exiting...")
 			cancel()
 		}
