@@ -43,21 +43,6 @@ services:
       - nats
     networks:
       - delfare_default
-
-  client:
-    build: ./client-service
-    container_name: client-service
-    env_file:
-      - .env
-    environment:
-      - NATS_URL=${NATS_URL}
-      - NATS_USERNAME=${NATS_USERNAME}
-      - NATS_PASSWORD=${NATS_PASSWORD}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-    depends_on:
-      - nats
-    networks:
-      - delfare_default
 networks:
   delfare_default:
     driver: bridge

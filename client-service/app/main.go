@@ -40,7 +40,6 @@ func main() {
 	// Goroutine to process events
 	go func() {
 		for event := range eventCh {
-			fmt.Println("Received event:", event)
 			events = append(events, event)
 		}
 	}()
@@ -62,7 +61,7 @@ func main() {
 			cancel()
 		case <-doneCh:
 			b, _ := json.Marshal(events)
-			fmt.Printf("events are %s", b)
+			fmt.Printf("events are \u001B[1;32m %s \n", b)
 			fmt.Println("Processing complete. Exiting...")
 			cancel()
 		}

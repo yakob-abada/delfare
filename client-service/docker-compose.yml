@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  client:
+    build: .
+    container_name: client-service
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=${NATS_URL}
+      - NATS_USERNAME=${NATS_USERNAME}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+    networks:
+      - delfare_default
+
+networks:
+  delfare_default:
+    external: true

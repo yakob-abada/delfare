@@ -47,7 +47,6 @@ func (r *NATSEventRepository) GetLastCriticalEvents(
 
 		// Stop after limit matching events.
 		if atomic.LoadInt32(&count) >= int32(limit) {
-			fmt.Println("Received 10 critical events. Unsubscribing...")
 			r.logger.Info(domain.LogContext{}, fmt.Sprintf("Received %d critical events. Unsubscribing...", count))
 
 			if err := sub.Unsubscribe(); err != nil {

@@ -43,6 +43,10 @@ Set up db by going to `http://localhost:8086/` use bucket `event-bucket` and org
 `writer-service/` and `reader-service/` reader directories.
 
 ```bash
+# Run client-service
+cd client-service/ 
+mv .env_example .env
+docker-compose up -d
 
 # Run writer-service
 cd writer-service/ 
