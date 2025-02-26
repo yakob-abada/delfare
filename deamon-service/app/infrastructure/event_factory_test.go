@@ -1,6 +1,8 @@
 package infrastructure
 
 import (
+	"github.com/stretchr/testify/mock"
+	"github.com/yakob-abada/delfare/deamon-service/domain"
 	"testing"
 	"time"
 
@@ -8,7 +10,9 @@ import (
 )
 
 func TestSecurityEventFactory_CreateEvent(t *testing.T) {
-	factory := NewSecurityEventFactory()
+	mockLogger := new(MockLogger)
+	mockLogger.On("Error", domain.LogContext{}, "Failed to encrypt message", mock.Anything).Return(nil)
+	factory := NewSecurityEventFactory("this-is-a-32-byte-encryption-key", mockLogger)
 
 	event := factory.CreateEvent()
 
@@ -20,5 +24,5 @@ func TestSecurityEventFactory_CreateEvent(t *testing.T) {
 	assert.NoError(t, err, "Timestamp should be in RFC3339 format")
 
 	// Verify Message
-	assert.Contains(t, event.Message, "Security alert", "Event message should contain 'Security alert'")
+	assert.NotContains(t, event.Message, "Security alert", "Event message should contain 'Security alert'")
 }

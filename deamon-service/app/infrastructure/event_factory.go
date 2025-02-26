@@ -20,11 +20,13 @@ type EventFactory interface {
 
 type SecurityEventFactory struct {
 	encryptionKey string
+	logger        domain.Logger
 }
 
-func NewSecurityEventFactory(encryptionKey string) *SecurityEventFactory {
+func NewSecurityEventFactory(encryptionKey string, logger domain.Logger) *SecurityEventFactory {
 	return &SecurityEventFactory{
 		encryptionKey: encryptionKey,
+		logger:        logger,
 	}
 }
 
@@ -34,6 +36,7 @@ func (f *SecurityEventFactory) CreateEvent() domain.Event {
 
 	encryptedMessage, err := encrypt(message, f.encryptionKey) // Replace with a secure key
 	if err != nil {
+		f.logger.Error(domain.LogContext{}, "Failed to encrypt message", "error", err)
 		panic(fmt.Sprintf("Failed to encrypt message: %v", err))
 	}
 

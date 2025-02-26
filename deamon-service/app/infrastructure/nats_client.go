@@ -3,12 +3,13 @@ package infrastructure
 import (
 	"fmt"
 	"github.com/nats-io/nats.go"
+	"github.com/yakob-abada/delfare/deamon-service/config"
 )
 
-func NewNATSClient(url, username, password string) *nats.Conn {
+func NewNATSClient(cfg *config.Config) *nats.Conn {
 	nc, err := nats.Connect(
-		url,
-		//nats.UserInfo(username, password),
+		cfg.NATSURL,
+		nats.UserInfo(cfg.NATSUsername, cfg.NATSPassword),
 	)
 
 	if err != nil {

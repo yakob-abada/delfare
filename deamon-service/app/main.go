@@ -1,50 +1,69 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/yakob-abada/delfare/deamon-service/infrastucture/validation"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/yakob-abada/delfare/deamon-service/application"
-	infrastructure "github.com/yakob-abada/delfare/deamon-service/infrastucture"
+	"github.com/yakob-abada/delfare/deamon-service/config"
+	"github.com/yakob-abada/delfare/deamon-service/infrastructure"
+	"github.com/yakob-abada/delfare/deamon-service/infrastructure/validation"
 )
 
 func main() {
-	natsURL := os.Getenv("NATS_URL")
-	if natsURL == "" {
-		panic("NATS_URL environment variable is not set")
-	}
+	cfg := config.LoadConfig()
+	isProd := cfg.Env == "prod"
 
-	natsUsername := os.Getenv("NATS_USERNAME")
-	if natsURL == "" {
-		panic("NATS_USERNAME environment variable is not set")
-	}
-
-	natsPassword := os.Getenv("NATS_PASSWORD")
-	if natsURL == "" {
-		panic("NATS_PASSWORD environment variable is not set")
+	logger, err := infrastructure.NewZapLogger(isProd)
+	if err != nil {
+		log.Fatal("Failed to initialize logger:", err)
 	}
 
 	encryptionKey := os.Getenv("ENCRYPTION_KEY")
 	if encryptionKey == "" {
-		panic("ENCRYPTION_KEY environment variable is not set")
+		log.Fatal("ENCRYPTION_KEY environment variable is not set")
 	}
 
-	nc := infrastructure.NewNATSClient(natsURL, natsUsername, natsPassword)
+	nc := infrastructure.NewNATSClient(cfg)
 	defer nc.Close()
 
 	eventService := application.NewEventService(
 		infrastructure.NewNATSPublisher(nc),
 		validation.NewSecurityEventValidator(),
-		infrastructure.NewSecurityEventFactory(encryptionKey),
+		infrastructure.NewSecurityEventFactory(encryptionKey, logger),
+		logger,
 	)
 
-	for {
-		if err := eventService.PublishEvent(); err != nil {
-			fmt.Println("Error publishing event:", err)
-		}
+	// Create a cancellable context that listens for OS signals
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-		time.Sleep(2 * time.Second)
-	}
+	// Start event publishing loop
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("Shutting down event publishing loop...")
+				return
+			default:
+				if err := eventService.PublishEvent(); err != nil {
+					fmt.Println("Error publishing event:", err)
+				}
+				time.Sleep(2 * time.Second)
+			}
+		}
+	}()
+
+	// Wait for termination signal
+	<-ctx.Done()
+	fmt.Println("Received shutdown signal, cleaning up...")
+
+	// Allow some time for cleanup (if needed)
+	time.Sleep(1 * time.Second)
+	fmt.Println("Shutdown complete.")
 }

@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/yakob-abada/delfare/client-service/domain"
+	"github.com/yakob-abada/delfare/deamon-service/domain"
 )
 
 type ZapLogger struct {

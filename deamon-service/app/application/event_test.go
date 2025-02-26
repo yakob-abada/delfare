@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/mock"
-	infrastructure "github.com/yakob-abada/delfare/deamon-service/infrastucture"
-	"github.com/yakob-abada/delfare/deamon-service/infrastucture/validation"
+	"github.com/yakob-abada/delfare/deamon-service/infrastructure"
+	"github.com/yakob-abada/delfare/deamon-service/infrastructure/validation"
 	"testing"
 	"time"
 
@@ -19,9 +19,10 @@ func TestEventService_PublishEvent(t *testing.T) {
 	mockPublisher := new(infrastructure.MockNATSPublisher)
 	mockValidator := new(validation.MockValidator)
 	mockEventFactory := new(infrastructure.MockEventFactory)
+	mockLogger := new(infrastructure.MockLogger)
 
 	// Create the EventService with the mocks
-	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory)
+	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory, mockLogger)
 
 	// Create a sample event
 	event := domain.Event{
@@ -52,9 +53,11 @@ func TestEventService_PublishEvent_ValidationError(t *testing.T) {
 	mockPublisher := new(infrastructure.MockNATSPublisher)
 	mockValidator := new(validation.MockValidator)
 	mockEventFactory := new(infrastructure.MockEventFactory)
+	mockLogger := new(infrastructure.MockLogger)
+	mockLogger.On("Error", domain.LogContext{}, "validation failed", mock.Anything).Return()
 
 	// Create the EventService with the mocks
-	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory)
+	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory, mockLogger)
 
 	// Create a sample event
 	event := domain.Event{
@@ -84,6 +87,8 @@ func TestEventService_PublishEvent_Error(t *testing.T) {
 	mockPublisher := new(infrastructure.MockNATSPublisher)
 	mockValidator := new(validation.MockValidator)
 	mockEventFactory := new(infrastructure.MockEventFactory)
+	mockLogger := new(infrastructure.MockLogger)
+	mockLogger.On("Error", domain.LogContext{}, "failed to publish event", mock.Anything).Return()
 
 	// Create a sample event
 	event := domain.Event{
@@ -98,7 +103,7 @@ func TestEventService_PublishEvent_Error(t *testing.T) {
 	mockPublisher.On("Publish", mock.AnythingOfType("domain.Event")).Return(fmt.Errorf("publish error"))
 
 	// Create the EventService with the mock publisher
-	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory)
+	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory, mockLogger)
 
 	// Call the PublishEvent method
 	err := eventService.PublishEvent()
@@ -113,9 +118,10 @@ func TestEventService_PublishEvent_MultipleCalls(t *testing.T) {
 	mockPublisher := new(infrastructure.MockNATSPublisher)
 	mockValidator := new(validation.MockValidator)
 	mockEventFactory := new(infrastructure.MockEventFactory)
+	mockLogger := new(infrastructure.MockLogger)
 
 	// Create the EventService with the mocks
-	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory)
+	eventService := application.NewEventService(mockPublisher, mockValidator, mockEventFactory, mockLogger)
 
 	// Create a sample event
 	event := domain.Event{
@@ -127,7 +133,7 @@ func TestEventService_PublishEvent_MultipleCalls(t *testing.T) {
 	// Set expectations on the mocks
 	mockEventFactory.On("CreateEvent").Return(event)
 	mockValidator.On("Validate", event).Return(nil)
-	mockPublisher.On("Publish", mock.AnythingOfType("domain.Event")).Return()
+	mockPublisher.On("Publish", mock.AnythingOfType("domain.Event")).Return(nil)
 
 	// Call the PublishEvent method multiple times
 	for i := 0; i < 5; i++ {
