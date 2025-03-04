@@ -1,9 +1,14 @@
 package config
 
 import (
+	"context"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
 // Config Struct
@@ -23,13 +28,13 @@ type Config struct {
 }
 
 // LoadConfig reads configuration from environment variables
-func LoadConfig() *Config {
+func LoadConfig(ctx context.Context) *Config {
 	cfg := &Config{
 		NATSURL:              getEnv("NATS_URL", "nats://localhost:4222"),
-		NATSUsername:         getEnv("NATS_USERNAME", "username"),
-		NATSPassword:         getEnv("NATS_PASSWORD", "password"),
+		NATSUsername:         getSecret(ctx, "NATS_USERNAME", "username"),
+		NATSPassword:         getSecret(ctx, "NATS_PASSWORD", "password"),
 		InfluxDBURL:          getEnv("INFLUXDB_URL", "http://localhost:8086"),
-		InfluxDBToken:        getEnv("INFLUXDB_TOKEN", "0kDO0SGFORhP0YbJLFNh8WRZ4T-iuY7uVR279NDUtHscRX8rJct1QTuAxMeYl3Rp_Kvx-4oZEYZDsuHjMNILeQ=="),
+		InfluxDBToken:        getSecret(ctx, "INFLUXDB_TOKEN", "0kDO0SGFORhP0YbJLFNh8WRZ4T-iuY7uVR279NDUtHscRX8rJct1QTuAxMeYl3Rp_Kvx-4oZEYZDsuHjMNILeQ=="),
 		InfluxDBOrg:          getEnv("INFLUXDB_ORG", "event-org"),
 		InfluxDBBucket:       getEnv("INFLUXDB_BUCKET", "event-bucket"),
 		LogLevel:             getEnv("LOG_LEVEL", "info"),
@@ -59,4 +64,40 @@ func getEnvAsInt(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func getSecret(ctx context.Context, key string, defaultValue string) string {
+	env := getEnv("ENV", "dev")
+
+	if env == "dev" {
+		return getEnv(key, defaultValue)
+	}
+
+	return getSecretFromAWS(ctx, key)
+}
+
+func getSecretFromAWS(ctx context.Context, secretName string) string {
+	// Load AWS SDK configuration
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion("us-east-1")) // Change region accordingly
+	if err != nil {
+		log.Printf("Error loading AWS config: %v", err)
+		return ""
+	}
+
+	// Create AWS Secrets Manager client
+	client := secretsmanager.NewFromConfig(cfg)
+
+	// Get secret value
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretName),
+	}
+
+	result, err := client.GetSecretValue(ctx, input)
+	if err != nil {
+		log.Printf("Error retrieving secret %s from AWS Secrets Manager: %v", secretName, err)
+		return ""
+	}
+
+	log.Println("Successfully retrieved secret from AWS Secrets Manager")
+	return aws.ToString(result.SecretString)
 }

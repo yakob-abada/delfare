@@ -14,7 +14,9 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cfg := config.LoadConfig(ctx)
 	isProd := cfg.Env == "prod"
 
 	logger, err := infrastructure.NewZapLogger(isProd)
@@ -29,8 +31,6 @@ func main() {
 
 	publisher := infrastructure.NewNATSPublisher(nc, logger)
 	eventService := application.NewEventService(influxRepo, publisher, logger, cfg.WorkerCount)
-
-	ctx, cancel := context.WithCancel(context.Background())
 
 	err = eventService.PublishCriticalEvents(ctx, cfg.MaxProcessedEvents, cfg.MinCriticalityEvents)
 	if err != nil {

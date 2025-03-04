@@ -21,12 +21,12 @@ services:
     ports:
       - "8086:8086"
     environment:
-      - DOCKER_INFLUXDB_INIT_MODE=${DOCKER_INFLUXDB_INIT_MODE}
-      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
-      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      - DOCKER_INFLUXDB_INIT_MODE="setup"
+      - DOCKER_INFLUXDB_INIT_USERNAME="username"
+      - DOCKER_INFLUXDB_INIT_PASSWORD="password"
+      - DOCKER_INFLUXDB_INIT_ORG="event-org"
+      - DOCKER_INFLUXDB_INIT_BUCKET="event-bucket"
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="token"
     networks:
       - delfare_default
   daemon:
@@ -46,5 +46,5 @@ services:
 networks:
   delfare_default:
     driver: bridge
-#    external: true
+    external: true
     name: delfare_default

@@ -16,7 +16,11 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	// Create a cancellable context that listens for OS signals
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	cfg := config.LoadConfig(ctx)
 	isProd := cfg.Env == "prod"
 
 	logger, err := infrastructure.NewZapLogger(isProd)
@@ -38,10 +42,6 @@ func main() {
 		infrastructure.NewSecurityEventFactory(encryptionKey, logger),
 		logger,
 	)
-
-	// Create a cancellable context that listens for OS signals
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	// Start event publishing loop
 	go func() {

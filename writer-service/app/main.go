@@ -13,10 +13,12 @@ import (
 )
 
 func main() {
-	// Initialize logger
-	cfg := config.LoadConfig()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cfg := config.LoadConfig(ctx)
 	isProd := cfg.Env == "prod"
 
+	// Initialize logger
 	logger, err := infrastructure.NewZapLogger(isProd)
 	if err != nil {
 		panic("Failed to initialize logger")
@@ -30,7 +32,6 @@ func main() {
 
 	subscriber := infrastructure.NewNATSSubscriber(nc, logger)
 
-	ctx, cancel := context.WithCancel(context.Background())
 	eventService := application.NewEventService(subscriber, influxRepo, logger)
 	err = eventService.HandleEvent(ctx)
 	if err != nil {

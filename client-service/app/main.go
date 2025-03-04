@@ -15,7 +15,8 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	ctx, cancel := context.WithCancel(context.Background())
+	cfg := config.LoadConfig(ctx)
 	isProd := cfg.Env == "prod"
 	// Initialize Zap logger
 	logger, err := infrastructure.NewZapLogger(isProd)
@@ -32,7 +33,6 @@ func main() {
 
 	repo := infrastructure.NewNATSEventRepository(nc, logger)
 	eventService := application.NewEventService(repo, logger)
-	ctx, cancel := context.WithCancel(context.Background())
 	eventCh := make(chan domain.Event)
 	doneCh := make(chan struct{})
 	var events []domain.Event
